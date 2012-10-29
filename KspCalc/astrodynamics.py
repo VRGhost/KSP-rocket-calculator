@@ -4,3 +4,7 @@ class Point(object):
     def __init__(self, planet, altitude):
         self.planet = planet
         self.altitude = altitude
+
+    @property
+    def g(self):
+        return self.planet.g(self.altitude)

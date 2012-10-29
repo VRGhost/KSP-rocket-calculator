@@ -37,3 +37,5 @@ def get_parser():
 if __name__ == "__main__":
     args = get_parser().parse_args()
     rocket = Rocket.fromDict(args.rocket)
+    rocket.setPos(args.start)
+    print rocket.getDeltaV()
