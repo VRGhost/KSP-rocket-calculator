@@ -22,4 +22,10 @@ class LT2_1(Weight):
     name = "LT-2(1) Landing Strut"
     mass = 0.005 * 1000
 
-ALL = (PodMk1, Mk16Parachute, Tr18A, LT2_1)
+class TVR_1180C(Weight):
+
+    name = "TVR-1180C Mk1 Stack Tri-Coupler"
+    mass = 0.3 * 1000
+
+
+ALL = (PodMk1, Mk16Parachute, Tr18A, LT2_1, TVR_1180C)

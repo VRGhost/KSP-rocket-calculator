@@ -3,5 +3,10 @@
 name: "Sample Mun orbiter."
 
 stages:
-    - parts: [Command Pod Mk1, ParachuteMk16, Tr-18A decoupler]
-    - parts: [4x FL-T400, 4x LT-2(1), LV-909 Liquid Fuel Engine]
+    - parts: [Command Pod Mk1, ParachuteMk16]
+    - parts: [Tr-18A stack decoupler]
+    - parts: [FL-T400, 4x LT-2(1), LV-909 Liquid Fuel Engine]
+    #- parts: [Tr-18A stack decoupler]
+    #- parts: [FL-T400, LV-T45 Liquid Fuel Engine ]
+    #- parts: [Tr-18A stack decoupler]
+    #- parts: [12x FL-T400, 3x LV-T30 Liquid Fuel Engine, TVR-1180C Mk1 Stack Tri-Coupler]

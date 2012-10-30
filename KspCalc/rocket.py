@@ -12,7 +12,8 @@ class Rocket(object):
     _position = None
     position = property(lambda s: s._position)
     g = property(lambda s: s.position.g)
-    ignited = False
+    ignitedStages = property(lambda s: (stage for stage in s.stages if stage.ignited))
+    ignited = property(lambda s: any(stage.ignited for stage in s.stages))
     mass = property(lambda s: sum(stage.mass for stage in s.stages))
     weight = property(lambda s: sum(stage.weight for stage in s.stages))
     speed = None
@@ -32,32 +33,36 @@ class Rocket(object):
         
     def fly(self, dt=0.1):
         """Fly rocket till it is out of fuel."""
-        self.ignited = True
         self.speed = 0
         absTime = 0
         while self.stages:
-            if self.stages[-1].empty:
-                yield messages.StageSeparation(
-                    rocket=self,
-                    stage=self.stages.pop(-1),
-                    dt=dt,
-                    absTime=absTime,
-                )
+            for stage in self.ignitedStages:
+                if stage.empty:
+                    self.stages.remove(stage)
+                    yield messages.StageSeparation(
+                        rocket=self,
+                        stage=stage,
+                        dt=dt,
+                        absTime=absTime,
+                    )
             else:
-                stage = self.stages[-1]
-                for msg in stage.fly(dt):
-                    msg.setAbsTime(absTime)
+                # No ignited stages
+                self._igniteNextStage()
 
-                    dV = msg.stage.acceleration * dt
-                    if self.position.standingOnSurface:
-                        dV = max(dV, 0)
-                        self.speed = max(self.speed, 0)
+            stage = self.stages[-1]
+            for msg in stage.fly(dt):
+                msg.setAbsTime(absTime)
 
-                    self.speed += dV
-                    self.position.changeAlt(self.speed * dV)
+                dV = msg.stage.acceleration * dt
+                if self.position.standingOnSurface:
+                    dV = max(dV, 0)
+                    self.speed = max(self.speed, 0)
 
-                    yield msg
-                    absTime += dt
+                self.speed += dV
+                self.position.changeAlt(self.speed * dV)
+
+                yield msg
+                absTime += dt
 
 
     def setPos(self, pos):
@@ -98,6 +103,7 @@ class Stage(object):
     """Stage of a rocket."""
 
     parts = name = _rocket = None
+    ignited = False
 
     engines = property(lambda s: (part for part in s.parts if part.isEngine))
     fuelTanks = property(lambda s: (part for part in s.parts if part.isFuelTank))

@@ -24,7 +24,7 @@ def findByName(name):
     (weight1, best1) = weighted[0]
     (weight2, best2) = weighted[1]
 
-    if (weight1 < 0.5) or (weight2 * 2 > weight1):
+    if (weight1 < 0.5) or ((weight1 < 0.98) and (weight2 * 1.5 > weight1)):
         raise Exception("Unable to map name {!r} to the object. Best guess: {!r} (ratio {}), second best guess: {!r} (ratio {})".format(
             name, best1.name, weight1, best2.name, weight2,
         ))
