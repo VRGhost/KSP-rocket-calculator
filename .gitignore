@@ -6,7 +6,6 @@
 dist
 build
 eggs
-parts
 bin
 var
 sdist
@@ -25,5 +24,4 @@ pip-log.txt
 
 __pycache__
 
-#Mr Developer
-.mr.developer.cfg
+*.sublime-workspace
