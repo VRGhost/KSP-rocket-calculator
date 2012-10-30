@@ -8,3 +8,19 @@ class Point(object):
     @property
     def g(self):
         return self.planet.g(self.altitude)
+
+    @property
+    def pressure(self):
+    	"""Air pressure in given point (measured in atmospheres)."""
+    	if self.planet.hasAtmosphere:
+    		rv = self.planet.pressureAt(self.altitude)
+    	else:
+    		rv = 0.0
+    	return rv
+
+    @property
+    def standingOnSurface(self):
+        return abs(self.altitude - self.planet.radius) < 1e-2
+
+    def changeAlt(self, val):
+        self.altitude += val

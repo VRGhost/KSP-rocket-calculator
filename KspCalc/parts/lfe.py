@@ -1,4 +1,4 @@
-from .base import LFE
+from .base import (LFE, AtmDependantCls)
 
 class Lv909(LFE):
 
@@ -6,9 +6,6 @@ class Lv909(LFE):
 
     mass = 0.5 * 1000
     thrust = 50 * 1000
-    consumptionAtm = 3.4
-    consumptionVac = 2.6
-    IspAtm = 300
-    IspVac = 390
+    consumptionL = AtmDependantCls(atm=3.4, vac=2.6)
 
 ALL = (Lv909, )

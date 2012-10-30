@@ -1,7 +1,7 @@
 # Three stage rocket as depicted on http://kspwiki.nexisonline.net/wiki/Tutorial:Advanced_Rocket_Design
 
 name: "Sample Mun orbiter."
-parts: [Command Pod Mk1, ParachuteMk16, Tr-18A decoupler]
 
 stages:
-    - parts: [FL-T400, 3x LT-2(1), LV-909 Liquid Fuel Engine]
+    - parts: [Command Pod Mk1, ParachuteMk16, Tr-18A decoupler]
+    - parts: [4x FL-T400, 4x LT-2(1), LV-909 Liquid Fuel Engine]

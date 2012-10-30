@@ -23,6 +23,7 @@ class Celestial(object):
     name = None
     _onOrbit = None
     _childrenOrbits = None
+    hasAtmosphere = property(lambda s: False)
 
     def __init__(self, name, radius, mass):
         self.name = name
@@ -39,6 +40,16 @@ class Celestial(object):
 
     def g(self, distance):
         return consts.G * self.mass / (distance**2)
+
+    def findOne(self, name):
+        rv = tuple(self.find(name))
+        
+        if not rv:
+            raise Exception("No {!r} found".format(name))
+        elif len(rv) > 1:
+            raise Exception("More than one {!r} found".format(name))
+
+        return rv[0]
 
     def find(self, name):
         if self.name == name:
@@ -83,6 +94,22 @@ class Celestial(object):
 class Star(Celestial):
     """Star. """
     pass
+
+class CelestialWithAtmosphere(Celestial):
+    """A Celestial object with atmosphere."""
+
+    hasAtmosphere = property(lambda s: True)
+
+    def __init__(self, pressure, *args, **kwargs):
+        """
+            Pressure is expected to be a formula that given the altitude bove gound (in metres) returns pressure in atmospheres.
+        """
+        super(CelestialWithAtmosphere, self).__init__(*args, **kwargs)
+        self.pressureAboveGround = pressure
+
+    def pressureAt(self, altitude):
+        """Pressure with altitude measured to the centre of a planet."""
+        return self.pressureAboveGround(altitude - self.radius)
 
 class Orbit(object):
 

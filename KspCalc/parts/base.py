@@ -1,3 +1,5 @@
+from . import consts
+
 class Part(object):
     """Basic part."""
 
@@ -5,9 +7,21 @@ class Part(object):
     isEngine = property(lambda s: False)
     isFuelTank = property(lambda s: False)
 
-    def __init__(self, rocket):
+    def __init__(self, parent):
         super(Part, self).__init__()
-        self.rocket = rocket
+        self.rocket = parent
+        
+        typeDict = type(self).__dict__
+        for (name, value) in typeDict.items():
+            try:
+                instanciate = value.instanciate
+            except AttributeError:
+                continue
+            setattr(self, name, instanciate(self))
+
+    @property
+    def weight(self):
+        return self.rocket.position.g * self.mass
 
     def __repr__(self):
         return "<{} {!r}>".format(self.__class__.__name__, self.name)
@@ -23,30 +37,35 @@ class FuelTank(Part):
 
     massEmpty = None # kg
     massFull = None # kg
-    fuel = None # litres
+    fuelL = None # litres
+
+    fuelKg = property(lambda s: s.fuelL / consts.FUEL_RHO)
+    mass = property(lambda s: s.massEmpty + s.fuelKg)
 
     isFuelTank = property(lambda s: True)
+    empty = property(lambda s: s.fuelL < 1e-6)
 
     def __init__(self, *args, **kwargs):
         super(FuelTank, self).__init__(*args, **kwargs)
-        self._fuelDensity = float(self.fuel) / (self.massFull - self.massEmpty)
+        fuelDensity = float(self.fuelL) / (self.massFull - self.massEmpty)
+        assert abs(fuelDensity - consts.FUEL_RHO) < 1e-5, "Fuel is expected to have constant density"
+        assert self.mass == self.massFull
 
-    def consume(self, maxAmount):
-        amount = max(self.fuel, maxAmount)
-        self.fuel -= amount
-        return amount
+    def consumeL(self, maxAmount):
+        amount = min(self.fuelL, maxAmount)
+        self.fuelL -= amount
+        return (maxAmount - amount)
 
-    @property
-    def mass(self):
-        return self.massEmpty + self.fuelMass
-
-    @property
-    def fuelMass(self):
-        return self.fuel * self._fuelDensity
+    def consumeKg(self, maxAmount):
+        rho = consts.FUEL_RHO
+        litres = maxAmount * rho
+        rv = self.consumeL(litres)
+        return rv / rho
 
     def __repr__(self):
         return "<{} mass=({}, {})kg fuel={}>".format(
             self.__class__.__name__, self.massEmpty, self.massFull, self.fuel)
+
 
 class LFE(Part):
     """Liquid Fuel Engine."""
@@ -54,19 +73,46 @@ class LFE(Part):
     isEngine = property(lambda s: True)
 
     thrust = None # N
-    consumptionAtm = None # Litre/s
-    consumptionVac = None # L/s
-    IspAtm = None # seconds
-    IspVac = None # seconds
-
-    @property
-    def effectiveThrust(self):
-        return self.rocket.thrustRate * self.thrust
+    consumptionL = None # L/s
+    consumptionKg = property(lambda s: s.consumptionL.val * consts.FUEL_RHO) # Kg/s
+    Isp = property(lambda s: s.thrust / (s.consumptionKg * s.rocket.position.g)) # s
 
     @property
     def twRatio(self):
-        return self.thrust / (self.weight * self.rocket.position.g)
+        return self.thrust / self.weight
+
+class AtmDependant(object):
+    """Parameter that is dependant from the atmospheric pressure.
+    (instance object).
+
+    """
+
+    def __init__(self, atm, vac, parent):
+        super(AtmDependant, self).__init__()
+        self.atm = atm
+        self.vac = vac
+        self.parent = parent
 
     @property
-    def twRatioEffective(self):
-        return (self.thrust * self.rocket.thrustRate) / (self.weight * self.rocket.position.g)
+    def val(self):
+        pressure = self.parent.rocket.position.pressure
+        delta = self.atm - self.vac
+        return self.vac + delta * pressure
+
+class AtmDependantCls(object):
+    """Parameter that is dependant from the atmospheric pressure.
+
+    This is dummy object to be used in class objects. Gets automatically replaced with an instance
+    of `instanceCls' by parent class.
+    """
+
+    __slots__ = ("atm", "vac")
+    instanceCls = AtmDependant
+
+    def __init__(self, atm, vac):
+        super(AtmDependantCls, self).__init__()
+        self.atm = atm
+        self.vac = vac
+
+    def instanciate(self, parent):
+        return self.instanceCls(parent=parent, atm=self.atm, vac=self.vac)
