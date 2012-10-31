@@ -40,5 +40,7 @@ if __name__ == "__main__":
     rocket = Rocket.fromDict(args.rocket)
     rocket.setPos(args.start)
 
-    for el in rocket.fly():
-        print(el.rocket.speed)
+    for id, el in enumerate(rocket.fly(dt=0.01)):
+        if el.absTime >= 3:
+            print("altitude={}, speed={}".format(el.rocket.position.surfaceAltitude, el.rocket.speed))
+            1/0

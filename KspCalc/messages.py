@@ -15,7 +15,12 @@ class Message(object):
         val = self.fields[name]
         if callable(val):
             val = val(self)
+        # Cache value
+        setattr(self, name, val)
         return val
+
+    def toDict(self):
+        return dict((name, self.getField(name)) for name in self.fields.keys())
 
     def setAbsTime(self, val):
         assert self.absTime is None
@@ -31,7 +36,6 @@ class Message(object):
 class RocketFlightLog(Message):
 
     fields = {
-        "rocket": lambda s: s.rocket.name,
         "msg": lambda s: s.msg,
     }
 
@@ -43,8 +47,15 @@ class RocketFlightLog(Message):
 class StageFlightLog(Message):
 
     fields = {
+        "Isp": lambda s: s.stage.Isp,
+        "g": lambda s: s.rocket.position.g,
+        "endMass": lambda s: s.rocket.mass,
+        "startMass": lambda s: s.endMass + s.consumedKg,
         "thrustToWeightRatio": lambda s: s.stage.thrust / s.rocket.weight,
-        "dV": lambda s: s.rocket.position.g * s.stage.Isp * math.log((s.rocket.mass + s.consumedKg) / s.rocket.mass),
+        "tsailkovskydV": lambda s: s.g * s.Isp * math.log(s.startMass / s.endMass),
+        "tsailkovskydA": lambda s: s.tsailkovskydV / s.dt,
+        "effectiveA": lambda s: s.tsailkovskydA - s.g,
+        "effectivedV": lambda s: s.effectiveA * s.dt,
     }
 
     def __init__(self, stage, consumedKg, *args, **kwargs):

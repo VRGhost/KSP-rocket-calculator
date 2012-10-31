@@ -49,17 +49,20 @@ class Rocket(object):
                 # No ignited stages
                 self._igniteNextStage()
 
+            if not self.stages:
+                continue
+
             stage = self.stages[-1]
             for msg in stage.fly(dt):
                 msg.setAbsTime(absTime)
 
-                dV = msg.stage.acceleration * dt
+                dV = msg.effectivedV
                 if self.position.standingOnSurface:
                     dV = max(dV, 0)
                     self.speed = max(self.speed, 0)
 
                 self.speed += dV
-                self.position.changeAlt(self.speed * dV)
+                self.position.changeAlt(self.speed * msg.dt)
 
                 yield msg
                 absTime += dt
@@ -88,13 +91,10 @@ class Rocket(object):
         )
         return rocket
 
-    def getAboveStage(self, stage):
-        pos = self.stages.index(stage)
-        if pos > 0:
-            rv = self.stages[pos - 1]
-        else:
-            rv = None
-        return rv
+    def _igniteNextStage(self):
+        if not self.stages:
+            return
+        self.stages[-1].ignite()
 
     def __repr__(self):
         return "<{} {!r} parts={} stages={}>".format(self.__class__.__name__, self.name, self.parts, self.stages)
@@ -103,7 +103,8 @@ class Stage(object):
     """Stage of a rocket."""
 
     parts = name = _rocket = None
-    ignited = False
+    _ignited = False
+    ignited = property(lambda s: s._ignited)
 
     engines = property(lambda s: (part for part in s.parts if part.isEngine))
     fuelTanks = property(lambda s: (part for part in s.parts if part.isFuelTank))
@@ -120,8 +121,6 @@ class Stage(object):
 
     thrust = property(lambda s: sum(eng.thrust for eng in s.engines))
     twRatio = property(lambda s: s.thrust / s.rocket.weight)
-    effectiveThrust = property(lambda s: s.thrust - s.rocket.weight)
-    acceleration = property(lambda s: s.effectiveThrust / s.rocket.mass)
 
     def __init__(self, parts, name):
         self.parts = tuple(partCls(self) for partCls in parts)
@@ -182,6 +181,10 @@ class Stage(object):
             if amount == 0:
                 break
         return amount
+
+    def ignite(self):
+        assert not self.ignited
+        self._ignited = True
 
 
     def __repr__(self):
