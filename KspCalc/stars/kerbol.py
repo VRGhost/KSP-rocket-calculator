@@ -8,6 +8,7 @@ def BuildSystem():
     kerbin = base.CelestialWithAtmosphere(
     	name="Kerbin", radius=600000, mass=5.2915793E+22,
     	pressure=lambda alt: math.e ** (-alt / 5000.0),
+        density=lambda pres: 1.2223 * pres,
     )
     sun.addSatellite(kerbin, ap=13599840256, pe=13599840256, period=9203544.6)
 

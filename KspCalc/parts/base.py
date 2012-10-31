@@ -33,13 +33,22 @@ class Weight(Part):
     def __repr__(self):
         return "<{} {!r} {}kg>".format(self.__class__.__name__, self.name, self.mass)
 
-class FuelTank(Part):
+class _FuelElement(Part):
+    """Element that is related to fuel consumption or carriage."""
+
+    def kgToLitres(self, val):
+        return val * consts.FUEL_RHO
+
+    def litresToKg(self, val):
+        return val / consts.FUEL_RHO
+
+class FuelTank(_FuelElement):
 
     massEmpty = None # kg
     massFull = None # kg
     fuelL = None # litres
 
-    fuelKg = property(lambda s: s.fuelL / consts.FUEL_RHO)
+    fuelKg = property(lambda s: s.litresToKg(s.fuelL))
     mass = property(lambda s: s.massEmpty + s.fuelKg)
 
     isFuelTank = property(lambda s: True)
@@ -57,24 +66,21 @@ class FuelTank(Part):
         return (maxAmount - amount)
 
     def consumeKg(self, maxAmount):
-        rho = consts.FUEL_RHO
-        litres = maxAmount * rho
-        rv = self.consumeL(litres)
-        return rv / rho
+        return self.litresToKg(self.consumeL(self.kgToLitres(maxAmount)))
 
     def __repr__(self):
-        return "<{} mass=({}, {})kg fuel={}>".format(
-            self.__class__.__name__, self.massEmpty, self.massFull, self.fuel)
+        return "<{} mass=({}, {})kg fuel={}L>".format(
+            self.__class__.__name__, self.massEmpty, self.massFull, self.fuelL)
 
 
-class LFE(Part):
+class LFE(_FuelElement):
     """Liquid Fuel Engine."""
 
     isEngine = property(lambda s: True)
 
     thrust = None # N
     consumptionL = None # L/s
-    consumptionKg = property(lambda s: s.consumptionL.val * consts.FUEL_RHO) # Kg/s
+    consumptionKg = property(lambda s: s.litresToKg(s.consumptionL.val)) # Kg/s
     Isp = property(lambda s: s.thrust / (s.consumptionKg * s.rocket.position.g)) # s
 
     @property

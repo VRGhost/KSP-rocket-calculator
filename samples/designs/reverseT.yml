@@ -1,0 +1,15 @@
+# Reverse "T" rocket
+
+name: "Simple reverse T rocket."
+
+stages:
+    -   parts: [Command Pod Mk1, ParachuteMk16]
+        name: Capsule
+    -   parts: [Tr-18A stack decoupler]
+    -   parts: [6x FL-T400 Fuel Tank, 5x LV-T30]
+        name: Engine Stage
+        takesFuel: [Fuel Stage, self]
+    -   parts: [Tr-18A stack decoupler]
+    -   parts: [13x FL-T400]
+        ignites: Engine Stage
+        name: Fuel Stage

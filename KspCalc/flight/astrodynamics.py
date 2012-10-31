@@ -21,8 +21,20 @@ class Point(object):
     	return rv
 
     @property
+    def density(self):
+        if self.planet.knowDensity:
+            rv = self.planet.densityAt(self.altitude)
+        else:
+            rv = 0.0
+        return rv
+
+    @property
     def standingOnSurface(self):
         return abs(self.altitude - self.planet.radius) < 1e-2
 
     def changeAlt(self, val):
         self.altitude += val
+
+    def copy(self):
+        cls = type(self)
+        return cls(self.planet, self.altitude)

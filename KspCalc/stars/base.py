@@ -99,17 +99,25 @@ class CelestialWithAtmosphere(Celestial):
     """A Celestial object with atmosphere."""
 
     hasAtmosphere = property(lambda s: True)
+    knowDensity = property(lambda s: s.densityAboveGround is not None)
 
-    def __init__(self, pressure, *args, **kwargs):
+    densityAboveGround = None
+
+    def __init__(self, pressure, *args, density=None, **kwargs):
         """
             Pressure is expected to be a formula that given the altitude bove gound (in metres) returns pressure in atmospheres.
         """
         super(CelestialWithAtmosphere, self).__init__(*args, **kwargs)
         self.pressureAboveGround = pressure
+        if density:
+            self.densityAboveGround = lambda alt: density(pressure(alt))
 
     def pressureAt(self, altitude):
         """Pressure with altitude measured to the centre of a planet."""
         return self.pressureAboveGround(altitude - self.radius)
+
+    def densityAt(self, altitude):
+        return self.densityAboveGround(altitude - self.radius)
 
 class Orbit(object):
 

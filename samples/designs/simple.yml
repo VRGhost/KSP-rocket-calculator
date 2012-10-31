@@ -1,0 +1,9 @@
+# Simple rocket
+
+name: "Simple reverse T rocket."
+
+stages:
+    -   parts: [Command Pod Mk1, ParachuteMk16]
+        name: Capsule
+    -   parts: [Tr-18A stack decoupler]
+    -   parts: [FL-T400 Fuel Tank, LV-T30, Advanced S.A.S. Module]

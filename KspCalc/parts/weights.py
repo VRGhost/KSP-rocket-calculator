@@ -27,5 +27,9 @@ class TVR_1180C(Weight):
     name = "TVR-1180C Mk1 Stack Tri-Coupler"
     mass = 0.3 * 1000
 
+class AdvSAS(Weight):
 
-ALL = (PodMk1, Mk16Parachute, Tr18A, LT2_1, TVR_1180C)
+    name = "Advanced S.A.S. Module"
+    mass = 0.8 * 1000
+
+ALL = (PodMk1, Mk16Parachute, Tr18A, LT2_1, TVR_1180C, AdvSAS)
